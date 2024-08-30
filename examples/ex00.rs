@@ -15,6 +15,7 @@ fn main() {
     let mut u = Vector::from(vec![2.0, 3.0]);
     u.scl(2.0);
     println!("{}", u);
+    println!("---");
 
     // Matrix operations
     let mut u = Matrix::from(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
@@ -30,4 +31,5 @@ fn main() {
     let mut u = Matrix::from(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
     u.scl(2.0);
     println!("{}", u);
+    println!("---");
 }
