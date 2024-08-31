@@ -35,35 +35,12 @@ impl<T> From<Array2D<T>> for Matrix<T> {
 
 impl<T> Matrix<T>
 where
-    T: Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
+    T: Copy + Default,
 {
-    pub fn add(&mut self, v: &Matrix<T>) -> &Self {
-        assert_eq!(
-            self.data.len(),
-            v.data.len(),
-            "Matrices must have the same dimensions"
-        );
-        assert_eq!(
-            self.data[0].len(),
-            v.data[0].len(),
-            "Matrices must have the same dimensions"
-        );
-        self.data = self
-            .data
-            .iter()
-            .zip(v.data.iter())
-            .map(|(row1, row2)| {
-                row1.iter()
-                    .zip(row2.iter())
-                    .map(|(a, b)| a.clone() + b.clone())
-                    .collect::<Vec<T>>()
-            })
-            .collect::<Vec<Vec<T>>>();
-
-        self
-    }
-
-    pub fn sub(&mut self, v: &Matrix<T>) -> &Self {
+    pub fn add(&mut self, v: &Matrix<T>) -> &Self
+    where
+        T: Add<Output = T>,
+    {
         assert_eq!(
             self.data.len(),
             v.data.len(),
@@ -75,37 +52,62 @@ where
             "Matrices must have the same dimensions"
         );
 
-        self.data = self
-            .data
-            .iter()
+        self.data
+            .iter_mut()
             .zip(v.data.iter())
-            .map(|(row1, row2)| {
-                row1.iter()
-                    .zip(row2.iter())
-                    .map(|(a, b)| a.clone() - b.clone())
-                    .collect::<Vec<T>>()
-            })
-            .collect::<Vec<Vec<T>>>();
+            .for_each(|(row1, row2)| {
+                row1.iter_mut().zip(row2.iter()).for_each(|(a, b)| {
+                    *a = *a + *b;
+                });
+            });
+
         self
     }
 
-    pub fn scl(&mut self, a: T) -> &Self {
-        self.data = self
-            .data
-            .iter()
-            .map(|row| {
-                row.iter()
-                    .map(|x| x.clone() * a.clone())
-                    .collect::<Vec<T>>()
-            })
-            .collect::<Vec<Vec<T>>>();
+    pub fn sub(&mut self, v: &Matrix<T>) -> &Self
+    where
+        T: Sub<Output = T>,
+    {
+        assert_eq!(
+            self.data.len(),
+            v.data.len(),
+            "Matrices must have the same dimensions"
+        );
+        assert_eq!(
+            self.data[0].len(),
+            v.data[0].len(),
+            "Matrices must have the same dimensions"
+        );
+
+        self.data
+            .iter_mut()
+            .zip(v.data.iter())
+            .for_each(|(row1, row2)| {
+                row1.iter_mut().zip(row2.iter()).for_each(|(a, b)| {
+                    *a = *a - *b;
+                });
+            });
+
+        self
+    }
+
+    pub fn scl(&mut self, a: T) -> &Self
+    where
+        T: Mul<Output = T>,
+    {
+        self.data.iter_mut().for_each(|row| {
+            row.iter_mut().for_each(|x| {
+                *x = *x * a;
+            });
+        });
+
         self
     }
 }
 
 impl<T> Add for Matrix<T>
 where
-    T: Add<Output = T> + Clone,
+    T: Add<Output = T> + Copy,
 {
     type Output = Self;
     fn add(mut self, m: Self) -> Self::Output {
@@ -120,24 +122,21 @@ where
             "Matrices must have the same dimensions"
         );
 
-        self.data = self
-            .data
-            .iter()
+        self.data
+            .iter_mut()
             .zip(m.data.iter())
-            .map(|(row1, row2)| {
-                row1.iter()
-                    .zip(row2.iter())
-                    .map(|(a, b)| a.clone() + b.clone())
-                    .collect::<Vec<T>>()
-            })
-            .collect::<Vec<Vec<T>>>();
+            .for_each(|(row1, row2)| {
+                row1.iter_mut().zip(row2.iter()).for_each(|(a, b)| {
+                    *a = *a + *b;
+                });
+            });
         self
     }
 }
 
 impl<T> Sub for Matrix<T>
 where
-    T: Sub<Output = T> + Clone,
+    T: Sub<Output = T> + Copy,
 {
     type Output = Self;
     fn sub(mut self, m: Self) -> Self::Output {
@@ -152,30 +151,30 @@ where
             "Matrices must have the same dimensions"
         );
 
-        self.data = self
-            .data
-            .iter()
+        self.data
+            .iter_mut()
             .zip(m.data.iter())
-            .map(|(row1, row2)| {
-                row1.iter()
-                    .zip(row2.iter())
-                    .map(|(a, b)| a.clone() - b.clone())
-                    .collect::<Vec<T>>()
-            })
-            .collect::<Vec<Vec<T>>>();
+            .for_each(|(row1, row2)| {
+                row1.iter_mut().zip(row2.iter()).for_each(|(a, b)| {
+                    *a = *a - *b;
+                });
+            });
         self
     }
 }
 
-impl<T: Copy + Mul<f64, Output = T>> Mul<f64> for Matrix<T> {
+impl<T> Mul<f64> for Matrix<T>
+where
+    T: Mul<f64, Output = T> + Copy,
+{
     type Output = Matrix<T>;
 
     fn mul(mut self, rhs: f64) -> Self::Output {
-        self.data = self
-            .data
-            .into_iter()
-            .map(|row| row.into_iter().map(|val| val * rhs).collect::<Vec<T>>())
-            .collect::<Vec<Vec<T>>>();
+        self.data.iter_mut().for_each(|row| {
+            row.iter_mut().for_each(|val| {
+                *val = *val * rhs;
+            });
+        });
         self
     }
 }

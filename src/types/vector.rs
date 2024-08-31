@@ -1,4 +1,5 @@
 use std::fmt;
+use std::iter::Sum;
 use std::ops::{Add, Mul, Sub};
 
 #[derive(Clone, Debug)]
@@ -29,41 +30,77 @@ impl<T> From<Vec<T>> for Vector<T> {
     }
 }
 
+impl<T> From<[T; 2]> for Vector<T>
+where
+    T: Clone,
+{
+    fn from(value: [T; 2]) -> Self {
+        Vector {
+            data: value.to_vec(),
+        }
+    }
+}
+
 impl<T> Vector<T>
 where
-    T: Clone + Add<Output = T> + Sub<Output = T> + Mul<Output = T>,
+    T: Copy + Default,
 {
-    pub fn add(&mut self, v: &Vector<T>) -> &Self {
+    pub fn add(&mut self, v: &Vector<T>) -> &Self
+    where
+        T: Add<Output = T>,
+    {
         assert_eq!(
             self.data.len(),
             v.data.len(),
             "Vectors must have the same dimensions"
         );
 
-        for (a, b) in self.data.iter_mut().zip(v.data.iter()) {
-            *a = a.clone() + b.clone();
-        }
+        self.data.iter_mut().zip(v.data.iter()).for_each(|(a, b)| {
+            *a = *a + *b;
+        });
         self
     }
 
-    pub fn sub(&mut self, v: &Vector<T>) -> &Self {
+    pub fn sub(&mut self, v: &Vector<T>) -> &Self
+    where
+        T: Sub<Output = T>,
+    {
         assert_eq!(
             self.data.len(),
             v.data.len(),
             "Vectors must have the same dimensions"
         );
 
-        for (a, b) in self.data.iter_mut().zip(v.data.iter()) {
-            *a = a.clone() - b.clone();
-        }
+        self.data.iter_mut().zip(v.data.iter()).for_each(|(a, b)| {
+            *a = *a - *b;
+        });
         self
     }
 
-    pub fn scl(&mut self, a: T) -> &Self {
-        for x in self.data.iter_mut() {
-            *x = x.clone() * a.clone();
-        }
+    pub fn scl(&mut self, a: T) -> &Self
+    where
+        T: Mul<Output = T>,
+    {
+        self.data.iter_mut().for_each(|x| {
+            *x = *x * a;
+        });
         self
+    }
+
+    pub fn dot(&self, v: Vector<T>) -> T
+    where
+        T: Mul<Output = T> + Add<Output = T> + Sum<T>,
+    {
+        assert_eq!(
+            self.data.len(),
+            v.data.len(),
+            "Vectors must have the same dimensions"
+        );
+        self.data
+            .iter()
+            .zip(v.data.iter())
+            .map(|(&a, &b)| a * b)
+            .sum()
     }
 }
 
