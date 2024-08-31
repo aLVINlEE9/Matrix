@@ -1,16 +1,13 @@
 use matrix::types::vector::Vector;
 
 fn main() {
-    let u = Vector::from([0., 0.]);
-    let v = Vector::from([1., 1.]);
-    println!("{}", u.dot(v));
-    // 0.0
-    let u = Vector::from([1., 1.]);
-    let v = Vector::from([1., 1.]);
-    println!("{}", u.dot(v));
-    // 2.0
-    let u = Vector::from([-1., 6.]);
-    let v = Vector::from([3., 2.]);
-    println!("{}", u.dot(v));
-    // 9.0
+    let u = Vector::from([0., 0., 0.]);
+    println!("{}, {}, {}", u.norm_1(), u.norm(), u.norm_inf());
+    // 0.0, 0.0, 0.0
+    let u = Vector::from([1., 2., 3.]);
+    println!("{}, {}, {}", u.norm_1(), u.norm(), u.norm_inf());
+    // 6.0, 3.74165738, 3.0
+    let u = Vector::from([-1., -2.]);
+    println!("{}, {}, {}", u.norm_1(), u.norm(), u.norm_inf());
+    // 3.0, 2.236067977, 2.0
 }

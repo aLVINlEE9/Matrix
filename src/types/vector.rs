@@ -30,11 +30,11 @@ impl<T> From<Vec<T>> for Vector<T> {
     }
 }
 
-impl<T> From<[T; 2]> for Vector<T>
+impl<T, const N: usize> From<[T; N]> for Vector<T>
 where
     T: Clone,
 {
-    fn from(value: [T; 2]) -> Self {
+    fn from(value: [T; N]) -> Self {
         Vector {
             data: value.to_vec(),
         }
@@ -101,6 +101,31 @@ where
             .zip(v.data.iter())
             .map(|(&a, &b)| a * b)
             .sum()
+    }
+}
+
+impl<T> Vector<T>
+where
+    T: Copy + Into<f32>,
+{
+    pub fn norm_1(&self) -> f32 {
+        self.data.iter().map(|&x| Into::<f32>::into(x).abs()).sum()
+    }
+    pub fn norm(&self) -> f32 {
+        self.data
+            .iter()
+            .map(|&x| {
+                let f: f32 = x.into();
+                f * f
+            })
+            .sum::<f32>()
+            .sqrt()
+    }
+    pub fn norm_inf(&self) -> f32 {
+        self.data
+            .iter()
+            .map(|&x| Into::<f32>::into(x).abs())
+            .fold(f32::NEG_INFINITY, f32::max)
     }
 }
 
